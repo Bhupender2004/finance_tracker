@@ -23,8 +23,7 @@ export default function BudgetsPage() {
     budgets, 
     loading, 
     error, 
-    addBudget, 
-    updateBudget, 
+    addBudget,  
     deleteBudget 
   } = useBudgets(MOCK_USER_ID)
 
@@ -47,7 +46,7 @@ export default function BudgetsPage() {
       try {
         await deleteBudget(budgetId)
         toast.success('Budget deleted successfully')
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete budget')
       }
     }

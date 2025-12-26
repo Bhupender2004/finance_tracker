@@ -8,7 +8,8 @@ import {
   query, 
   where, 
   orderBy,
-  Timestamp 
+  Timestamp,
+  DocumentData
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Goal } from '@/types'
@@ -36,7 +37,7 @@ export class GoalService {
   static async updateGoal(goalId: string, updates: Partial<Goal>) {
     try {
       const docRef = doc(db, COLLECTION_NAME, goalId)
-      const updateData: any = {
+      const updateData: DocumentData = {
         ...updates,
         updatedAt: Timestamp.now(),
       }

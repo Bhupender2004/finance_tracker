@@ -1,14 +1,62 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Goal } from '@/types'
-import { GoalService } from '@/lib/services/goalService'
+
+const STORAGE_KEY = 'financetrackr_goals'
+
+// Helper to load goals from localStorage
+const loadGoalsFromStorage = (userId: string): Goal[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const allGoals = JSON.parse(stored) as Goal[]
+      return allGoals
+        .filter(g => g.userId === userId)
+        .map(g => ({
+          ...g,
+          targetDate: new Date(g.targetDate),
+          createdAt: new Date(g.createdAt),
+          updatedAt: new Date(g.updatedAt),
+        }))
+    }
+  } catch (err) {
+    console.error('Error loading goals from localStorage:', err)
+  }
+  return []
+}
+
+// Helper to save goals to localStorage
+const saveGoalsToStorage = (goals: Goal[]) => {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(goals))
+  } catch (err) {
+    console.error('Error saving goals to localStorage:', err)
+  }
+}
+
+// Get all goals from storage (for internal use)
+const getAllGoalsFromStorage = (): Goal[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      return JSON.parse(stored) as Goal[]
+    }
+  } catch (err) {
+    console.error('Error loading all goals from localStorage:', err)
+  }
+  return []
+}
 
 export function useGoals(userId: string | null) {
   const [goals, setGoals] = useState<Goal[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Load goals from localStorage on mount
   useEffect(() => {
     if (!userId) {
       setGoals([])
@@ -16,85 +64,75 @@ export function useGoals(userId: string | null) {
       return
     }
 
-    const fetchGoals = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await GoalService.getUserGoals(userId)
-        setGoals(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch goals')
-        console.error('Error fetching goals:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
+    setLoading(true)
+    setError(null)
+    
+    // Small delay to simulate loading and ensure client-side execution
+    const timer = setTimeout(() => {
+      const loadedGoals = loadGoalsFromStorage(userId)
+      setGoals(loadedGoals)
+      setLoading(false)
+    }, 100)
 
-    fetchGoals()
+    return () => clearTimeout(timer)
+  }, [userId])
+
+  // Save goals to localStorage whenever they change
+  const persistGoals = useCallback((updatedGoals: Goal[]) => {
+    const allGoals = getAllGoalsFromStorage()
+    // Remove current user's goals and add updated ones
+    const otherGoals = allGoals.filter(g => g.userId !== userId)
+    saveGoalsToStorage([...otherGoals, ...updatedGoals])
   }, [userId])
 
   const addGoal = async (goal: Omit<Goal, 'id' | 'userId' | 'currentAmount' | 'createdAt' | 'updatedAt'>) => {
     if (!userId) throw new Error('User not authenticated')
     
-    try {
-      const id = await GoalService.createGoal(userId, goal)
-      const newGoal: Goal = {
-        ...goal,
-        id,
-        userId,
-        currentAmount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      setGoals(prev => [newGoal, ...prev])
-      return id
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add goal')
-      throw err
+    const id = `goal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const newGoal: Goal = {
+      ...goal,
+      id,
+      userId,
+      currentAmount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
+    
+    const updatedGoals = [newGoal, ...goals]
+    setGoals(updatedGoals)
+    persistGoals(updatedGoals)
+    return id
   }
 
   const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
-    try {
-      await GoalService.updateGoal(goalId, updates)
-      setGoals(prev => 
-        prev.map(goal => 
-          goal.id === goalId 
-            ? { ...goal, ...updates, updatedAt: new Date() }
-            : goal
-        )
-      )
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update goal')
-      throw err
-    }
+    const updatedGoals = goals.map(goal => 
+      goal.id === goalId 
+        ? { ...goal, ...updates, updatedAt: new Date() }
+        : goal
+    )
+    setGoals(updatedGoals)
+    persistGoals(updatedGoals)
   }
 
   const deleteGoal = async (goalId: string) => {
-    try {
-      await GoalService.deleteGoal(goalId)
-      setGoals(prev => prev.filter(goal => goal.id !== goalId))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete goal')
-      throw err
-    }
+    const updatedGoals = goals.filter(goal => goal.id !== goalId)
+    setGoals(updatedGoals)
+    persistGoals(updatedGoals)
   }
 
   const addToGoal = async (goalId: string, amount: number) => {
-    try {
-      const newAmount = await GoalService.addToGoal(goalId, amount)
-      setGoals(prev => 
-        prev.map(goal => 
-          goal.id === goalId 
-            ? { ...goal, currentAmount: newAmount, updatedAt: new Date() }
-            : goal
-        )
-      )
-      return newAmount
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add to goal')
-      throw err
-    }
+    const goal = goals.find(g => g.id === goalId)
+    if (!goal) throw new Error('Goal not found')
+    
+    const newAmount = goal.currentAmount + amount
+    const updatedGoals = goals.map(g => 
+      g.id === goalId 
+        ? { ...g, currentAmount: newAmount, updatedAt: new Date() }
+        : g
+    )
+    setGoals(updatedGoals)
+    persistGoals(updatedGoals)
+    return newAmount
   }
 
   return {
@@ -107,7 +145,8 @@ export function useGoals(userId: string | null) {
     addToGoal,
     refetch: () => {
       if (userId) {
-        GoalService.getUserGoals(userId).then(setGoals)
+        const loadedGoals = loadGoalsFromStorage(userId)
+        setGoals(loadedGoals)
       }
     }
   }

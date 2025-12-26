@@ -48,7 +48,7 @@ export function GoalCard({ goal, onEdit, onDelete, onAddMoney, className }: Goal
           duration: 6000,
         })
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to add money to goal')
     }
   }

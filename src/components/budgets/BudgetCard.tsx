@@ -165,7 +165,7 @@ export function BudgetCard({ budget, onEdit, onDelete, className }: BudgetCardPr
               className="bg-destructive/10 border border-destructive/20 rounded-lg p-3"
             >
               <p className="text-sm text-destructive font-medium">
-                You've exceeded your budget by {formatCurrency(getOverBudgetAmount())}
+                You have exceeded your budget by {formatCurrency(getOverBudgetAmount())}
               </p>
             </motion.div>
           )}
@@ -177,7 +177,7 @@ export function BudgetCard({ budget, onEdit, onDelete, className }: BudgetCardPr
               className="bg-warning/10 border border-warning/20 rounded-lg p-3"
             >
               <p className="text-sm text-warning font-medium">
-                You're close to your budget limit
+                You are close to your budget limit
               </p>
             </motion.div>
           )}

@@ -23,7 +23,13 @@ const COLORS = [
   'hsl(262, 83%, 58%)', // purple
 ]
 
-const CustomTooltip = ({ active, payload }: any) => {
+interface TooltipPayload {
+  name: string
+  value: number
+  payload: { name: string; value: number; color: string }
+}
+
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => {
   if (active && payload && payload.length) {
     const data = payload[0]
     return (
@@ -60,7 +66,7 @@ export function ExpenseChart({ data, title = "Expense Breakdown" }: ExpenseChart
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"

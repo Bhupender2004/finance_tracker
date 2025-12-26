@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, TrendingUp, PieChart, BarChart3 } from 'lucide-react'
+import { TrendingUp, PieChart, BarChart3 } from 'lucide-react'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { ExpenseChart } from '@/components/charts/ExpenseChart'
 import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart'
@@ -10,7 +10,7 @@ import { SpendingTrendsChart } from '@/components/charts/SpendingTrendsChart'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { cn } from '@/utils/cn'
+
 
 // Mock data for analytics
 const mockTimeSeriesData = [
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
                 {mockExpenseData
                   .sort((a, b) => b.value - a.value)
                   .slice(0, 5)
-                  .map((category, index) => (
+                  .map((category) => (
                     <div key={category.name} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div 

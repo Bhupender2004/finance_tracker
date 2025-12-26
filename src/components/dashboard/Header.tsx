@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Menu as MenuIcon, Bell, Search, User, X, Settings, LogOut, CreditCard, TrendingUp, AlertCircle } from 'lucide-react'
 import { Menu, Transition } from '@headlessui/react'
 import { Button } from '@/components/ui/Button'

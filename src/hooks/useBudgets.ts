@@ -1,14 +1,63 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Budget } from '@/types'
-import { BudgetService } from '@/lib/services/budgetService'
+
+const STORAGE_KEY = 'financetrackr_budgets'
+
+// Helper to load budgets from localStorage
+const loadBudgetsFromStorage = (userId: string): Budget[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const allBudgets = JSON.parse(stored) as Budget[]
+      return allBudgets
+        .filter(b => b.userId === userId)
+        .map(b => ({
+          ...b,
+          startDate: new Date(b.startDate),
+          endDate: new Date(b.endDate),
+          createdAt: new Date(b.createdAt),
+          updatedAt: new Date(b.updatedAt),
+        }))
+    }
+  } catch (err) {
+    console.error('Error loading budgets from localStorage:', err)
+  }
+  return []
+}
+
+// Helper to save budgets to localStorage
+const saveBudgetsToStorage = (budgets: Budget[]) => {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(budgets))
+  } catch (err) {
+    console.error('Error saving budgets to localStorage:', err)
+  }
+}
+
+// Get all budgets from storage (for internal use)
+const getAllBudgetsFromStorage = (): Budget[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      return JSON.parse(stored) as Budget[]
+    }
+  } catch (err) {
+    console.error('Error loading all budgets from localStorage:', err)
+  }
+  return []
+}
 
 export function useBudgets(userId: string | null) {
   const [budgets, setBudgets] = useState<Budget[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Load budgets from localStorage on mount
   useEffect(() => {
     if (!userId) {
       setBudgets([])
@@ -16,84 +65,70 @@ export function useBudgets(userId: string | null) {
       return
     }
 
-    const fetchBudgets = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await BudgetService.getUserBudgets(userId)
-        setBudgets(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch budgets')
-        console.error('Error fetching budgets:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
+    setLoading(true)
+    setError(null)
+    
+    // Small delay to simulate loading and ensure client-side execution
+    const timer = setTimeout(() => {
+      const loadedBudgets = loadBudgetsFromStorage(userId)
+      setBudgets(loadedBudgets)
+      setLoading(false)
+    }, 100)
 
-    fetchBudgets()
+    return () => clearTimeout(timer)
+  }, [userId])
+
+  // Save budgets to localStorage whenever they change
+  const persistBudgets = useCallback((updatedBudgets: Budget[]) => {
+    const allBudgets = getAllBudgetsFromStorage()
+    // Remove current user's budgets and add updated ones
+    const otherBudgets = allBudgets.filter(b => b.userId !== userId)
+    saveBudgetsToStorage([...otherBudgets, ...updatedBudgets])
   }, [userId])
 
   const addBudget = async (budget: Omit<Budget, 'id' | 'userId' | 'spent' | 'createdAt' | 'updatedAt'>) => {
     if (!userId) throw new Error('User not authenticated')
     
-    try {
-      const id = await BudgetService.createBudget(userId, budget)
-      const newBudget: Budget = {
-        ...budget,
-        id,
-        userId,
-        spent: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      setBudgets(prev => [newBudget, ...prev])
-      return id
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add budget')
-      throw err
+    const id = `budget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const newBudget: Budget = {
+      ...budget,
+      id,
+      userId,
+      spent: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
+    
+    const updatedBudgets = [newBudget, ...budgets]
+    setBudgets(updatedBudgets)
+    persistBudgets(updatedBudgets)
+    return id
   }
 
   const updateBudget = async (budgetId: string, updates: Partial<Budget>) => {
-    try {
-      await BudgetService.updateBudget(budgetId, updates)
-      setBudgets(prev => 
-        prev.map(budget => 
-          budget.id === budgetId 
-            ? { ...budget, ...updates, updatedAt: new Date() }
-            : budget
-        )
-      )
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update budget')
-      throw err
-    }
+    const updatedBudgets = budgets.map(budget => 
+      budget.id === budgetId 
+        ? { ...budget, ...updates, updatedAt: new Date() }
+        : budget
+    )
+    setBudgets(updatedBudgets)
+    persistBudgets(updatedBudgets)
   }
 
   const deleteBudget = async (budgetId: string) => {
-    try {
-      await BudgetService.deleteBudget(budgetId)
-      setBudgets(prev => prev.filter(budget => budget.id !== budgetId))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete budget')
-      throw err
-    }
+    const updatedBudgets = budgets.filter(budget => budget.id !== budgetId)
+    setBudgets(updatedBudgets)
+    persistBudgets(updatedBudgets)
   }
 
   const updateBudgetSpent = async (budgetId: string, spentAmount: number) => {
-    try {
-      await BudgetService.updateBudgetSpent(budgetId, spentAmount)
-      setBudgets(prev => 
-        prev.map(budget => 
-          budget.id === budgetId 
-            ? { ...budget, spent: spentAmount, updatedAt: new Date() }
-            : budget
-        )
-      )
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update budget spent amount')
-      throw err
-    }
+    const updatedBudgets = budgets.map(budget => 
+      budget.id === budgetId 
+        ? { ...budget, spent: spentAmount, updatedAt: new Date() }
+        : budget
+    )
+    setBudgets(updatedBudgets)
+    persistBudgets(updatedBudgets)
   }
 
   return {
@@ -106,7 +141,8 @@ export function useBudgets(userId: string | null) {
     updateBudgetSpent,
     refetch: () => {
       if (userId) {
-        BudgetService.getUserBudgets(userId).then(setBudgets)
+        const loadedBudgets = loadBudgetsFromStorage(userId)
+        setBudgets(loadedBudgets)
       }
     }
   }

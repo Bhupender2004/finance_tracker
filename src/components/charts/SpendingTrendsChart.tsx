@@ -12,14 +12,20 @@ interface SpendingTrendsChartProps {
   title?: string
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipEntry {
+  name: string
+  value: number
+  color: string
+}
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
         <p className="text-sm font-medium text-card-foreground mb-2">
           {label}
         </p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: TooltipEntry, index: number) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
             {entry.name}: {formatCurrency(entry.value)}
           </p>

@@ -22,8 +22,7 @@ export default function TransactionsPage() {
     transactions, 
     loading, 
     error, 
-    addTransaction, 
-    updateTransaction, 
+    addTransaction,  
     deleteTransaction 
   } = useTransactions(MOCK_USER_ID)
 
@@ -46,7 +45,7 @@ export default function TransactionsPage() {
       try {
         await deleteTransaction(transactionId)
         toast.success('Transaction deleted successfully')
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete transaction')
       }
     }

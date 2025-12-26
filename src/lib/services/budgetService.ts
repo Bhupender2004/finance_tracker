@@ -8,7 +8,8 @@ import {
   query, 
   where, 
   orderBy,
-  Timestamp 
+  Timestamp,
+  DocumentData
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Budget } from '@/types'
@@ -37,7 +38,7 @@ export class BudgetService {
   static async updateBudget(budgetId: string, updates: Partial<Budget>) {
     try {
       const docRef = doc(db, COLLECTION_NAME, budgetId)
-      const updateData: any = {
+      const updateData: DocumentData = {
         ...updates,
         updatedAt: Timestamp.now(),
       }

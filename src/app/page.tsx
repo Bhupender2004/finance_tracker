@@ -7,8 +7,6 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-  CreditCard,
-  PiggyBank
 } from 'lucide-react'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { StatCard } from '@/components/dashboard/StatCard'

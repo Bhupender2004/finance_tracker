@@ -5,9 +5,9 @@ import { ThemeProvider } from '@/contexts/ThemeContext'
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
 }))
 
 // Mock recharts to avoid canvas issues in tests
@@ -15,7 +15,7 @@ jest.mock('recharts', () => ({
   PieChart: () => <div data-testid="pie-chart">Pie Chart</div>,
   Pie: () => null,
   Cell: () => null,
-  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
+  ResponsiveContainer: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Tooltip: () => null,
   Legend: () => null,
 }))

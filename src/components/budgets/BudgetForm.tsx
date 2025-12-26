@@ -90,7 +90,7 @@ export function BudgetForm({ onSubmit, onCancel, initialData, isOpen }: BudgetFo
     // Auto-adjust end date based on period
     const startDate = watch('startDate')
     if (startDate) {
-      let endDate = new Date(startDate)
+      const endDate = new Date(startDate)
       switch (period) {
         case 'weekly':
           endDate.setDate(endDate.getDate() + 7)

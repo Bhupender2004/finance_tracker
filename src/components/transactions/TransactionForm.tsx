@@ -5,11 +5,11 @@ import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { cn } from '@/utils/cn'
-import { Transaction, TransactionCategory } from '@/types'
+import { Transaction } from '@/types'
 import { ALL_CATEGORIES, getCategoriesByType } from '@/lib/constants/categories'
 import toast from 'react-hot-toast'
 
@@ -40,7 +40,6 @@ export function TransactionForm({ onSubmit, onCancel, initialData, isOpen }: Tra
     formState: { errors },
     reset,
     setValue,
-    watch
   } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {

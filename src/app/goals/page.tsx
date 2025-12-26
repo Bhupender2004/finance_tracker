@@ -23,8 +23,7 @@ export default function GoalsPage() {
     goals, 
     loading, 
     error, 
-    addGoal, 
-    updateGoal, 
+    addGoal,
     deleteGoal,
     addToGoal
   } = useGoals(MOCK_USER_ID)
@@ -48,7 +47,7 @@ export default function GoalsPage() {
       try {
         await deleteGoal(goalId)
         toast.success('Goal deleted successfully')
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete goal')
       }
     }
