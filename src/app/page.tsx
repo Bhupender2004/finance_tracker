@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   DollarSign,
@@ -16,6 +16,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import { formatCurrency, formatDate } from '@/utils/formatters'
+
+// User name storage key
+const USER_NAME_KEY = 'financetrackr_username'
 
 // Mock data - in a real app, this would come from your API/database
 const mockStats = {
@@ -45,10 +48,79 @@ const mockRecentTransactions = [
   { id: '3', description: 'Petrol', amount: 3500, category: 'Transportation', type: 'expense', date: new Date() },
 ]
 
+// Get greeting based on time of day
+const getGreeting = () => {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
 export default function Dashboard() {
+  const [userName, setUserName] = useState<string>('')
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+
+  useEffect(() => {
+    const storedName = localStorage.getItem(USER_NAME_KEY)
+    if (storedName) {
+      setUserName(storedName)
+      setNameInput(storedName)
+    }
+  }, [])
+
+  const handleSaveName = () => {
+    if (nameInput.trim()) {
+      localStorage.setItem(USER_NAME_KEY, nameInput.trim())
+      setUserName(nameInput.trim())
+      setIsEditingName(false)
+    }
+  }
+
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6">
+        {/* Welcome Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex items-center justify-between"
+        >
+          <div>
+            {isEditingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                  placeholder="Enter your name"
+                  className="px-3 py-2 text-lg border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  autoFocus
+                />
+                <Button size="sm" onClick={handleSaveName}>Save</Button>
+                <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}>Cancel</Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold text-foreground">
+                  {getGreeting()}{userName ? `, ${userName}` : ''}! 👋
+                </h2>
+                <button
+                  onClick={() => setIsEditingName(true)}
+                  className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
+                >
+                  {userName ? 'Edit name' : 'Add your name'}
+                </button>
+              </div>
+            )}
+            <p className="text-muted-foreground mt-1">
+              Here&apos;s your financial overview for today.
+            </p>
+          </div>
+        </motion.div>
+
         {/* Stats Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

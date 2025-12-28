@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import AuthProvider from "@/components/providers/AuthProvider";
 import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
@@ -39,20 +40,22 @@ export default function RootLayout({
         <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ThemeProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: 'hsl(var(--card))',
-                color: 'hsl(var(--card-foreground))',
-                border: '1px solid hsl(var(--border))',
-              },
-            }}
-          />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'hsl(var(--card))',
+                  color: 'hsl(var(--card-foreground))',
+                  border: '1px solid hsl(var(--border))',
+                },
+              }}
+            />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
