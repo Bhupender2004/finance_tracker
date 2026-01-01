@@ -9,9 +9,7 @@ import { IncomeExpenseChart } from '@/components/charts/IncomeExpenseChart'
 import { SpendingTrendsChart } from '@/components/charts/SpendingTrendsChart'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { Button } from '@/components/ui/Button'
-import { TrialBanner } from '@/components/ui/TrialBanner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { useTrialAccess } from '@/hooks/useTrialAccess'
 
 // Mock data for analytics
 const mockTimeSeriesData = [
@@ -40,7 +38,6 @@ const timeRanges = [
 ]
 
 export default function AnalyticsPage() {
-  const { canAccess, isLoading: trialLoading, isAuthenticated, remainingUses } = useTrialAccess('analytics')
   const [selectedTimeRange, setSelectedTimeRange] = useState('6m')
 
   // Calculate insights
@@ -50,23 +47,8 @@ export default function AnalyticsPage() {
   const averageMonthlyExpenses = totalExpenses / mockTimeSeriesData.length
   const savingsRate = ((totalIncome - totalExpenses) / totalIncome) * 100
 
-  if (trialLoading) {
-    return (
-      <DashboardLayout title="Analytics">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    )
-  }
-
-  if (!canAccess) {
-    return null // Will redirect to login
-  }
-
   return (
     <DashboardLayout title="Analytics">
-      {!isAuthenticated && <TrialBanner remainingUses={remainingUses} feature="Analytics" />}
       <div className="space-y-6">
         {/* Header with Time Range Selector */}
         <motion.div

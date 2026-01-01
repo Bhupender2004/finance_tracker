@@ -8,9 +8,7 @@ import { GoalCard } from '@/components/goals/GoalCard'
 import { GoalForm } from '@/components/goals/GoalForm'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { Button } from '@/components/ui/Button'
-import { TrialBanner } from '@/components/ui/TrialBanner'
 import { useGoals } from '@/hooks/useGoals'
-import { useTrialAccess } from '@/hooks/useTrialAccess'
 import { Goal } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -18,7 +16,6 @@ import toast from 'react-hot-toast'
 const MOCK_USER_ID = 'mock-user-123'
 
 export default function GoalsPage() {
-  const { canAccess, isLoading: trialLoading, isAuthenticated, remainingUses } = useTrialAccess('goals')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   
@@ -30,20 +27,6 @@ export default function GoalsPage() {
     deleteGoal,
     addToGoal
   } = useGoals(MOCK_USER_ID)
-
-  if (trialLoading) {
-    return (
-      <DashboardLayout title="Goals">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    )
-  }
-
-  if (!canAccess) {
-    return null // Will redirect to login
-  }
 
   const handleAddGoal = async (goalData: Omit<Goal, 'id' | 'userId' | 'currentAmount' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -107,7 +90,6 @@ export default function GoalsPage() {
 
   return (
     <DashboardLayout title="Goals">
-      {!isAuthenticated && <TrialBanner remainingUses={remainingUses} feature="Goals" />}
       <div className="space-y-6">
         {/* Header with Add Button */}
         <motion.div

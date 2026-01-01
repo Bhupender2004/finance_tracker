@@ -8,9 +8,7 @@ import { BudgetCard } from '@/components/budgets/BudgetCard'
 import { BudgetForm } from '@/components/budgets/BudgetForm'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { Button } from '@/components/ui/Button'
-import { TrialBanner } from '@/components/ui/TrialBanner'
 import { useBudgets } from '@/hooks/useBudgets'
-import { useTrialAccess } from '@/hooks/useTrialAccess'
 import { Budget } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -18,7 +16,6 @@ import toast from 'react-hot-toast'
 const MOCK_USER_ID = 'mock-user-123'
 
 export default function BudgetsPage() {
-  const { canAccess, isLoading: trialLoading, isAuthenticated, remainingUses } = useTrialAccess('budgets')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null)
   
@@ -29,20 +26,6 @@ export default function BudgetsPage() {
     addBudget,  
     deleteBudget 
   } = useBudgets(MOCK_USER_ID)
-
-  if (trialLoading) {
-    return (
-      <DashboardLayout title="Budgets">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    )
-  }
-
-  if (!canAccess) {
-    return null // Will redirect to login
-  }
 
   const handleAddBudget = async (budgetData: Omit<Budget, 'id' | 'userId' | 'spent' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -97,7 +80,6 @@ export default function BudgetsPage() {
 
   return (
     <DashboardLayout title="Budgets">
-      {!isAuthenticated && <TrialBanner remainingUses={remainingUses} feature="Budgets" />}
       <div className="space-y-6">
         {/* Header with Add Button */}
         <motion.div

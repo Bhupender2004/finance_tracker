@@ -7,9 +7,7 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { TransactionList } from '@/components/transactions/TransactionList'
 import { TransactionForm } from '@/components/transactions/TransactionForm'
 import { Button } from '@/components/ui/Button'
-import { TrialBanner } from '@/components/ui/TrialBanner'
 import { useTransactions } from '@/hooks/useTransactions'
-import { useTrialAccess } from '@/hooks/useTrialAccess'
 import { Transaction } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -17,7 +15,6 @@ import toast from 'react-hot-toast'
 const MOCK_USER_ID = 'mock-user-123'
 
 export default function TransactionsPage() {
-  const { canAccess, isLoading: trialLoading, isAuthenticated, remainingUses } = useTrialAccess('transactions')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   
@@ -28,20 +25,6 @@ export default function TransactionsPage() {
     addTransaction,  
     deleteTransaction 
   } = useTransactions(MOCK_USER_ID)
-
-  if (trialLoading) {
-    return (
-      <DashboardLayout title="Transactions">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    )
-  }
-
-  if (!canAccess) {
-    return null // Will redirect to login
-  }
 
   const handleAddTransaction = async (transactionData: Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -90,7 +73,6 @@ export default function TransactionsPage() {
 
   return (
     <DashboardLayout title="Transactions">
-      {!isAuthenticated && <TrialBanner remainingUses={remainingUses} feature="Transactions" />}
       <div className="space-y-6">
         {/* Header with Add Button */}
         <motion.div

@@ -7,7 +7,6 @@ import { Menu, Transition } from '@headlessui/react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import Link from 'next/link'
-import { useSession, signOut } from 'next-auth/react'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -64,7 +63,6 @@ const notificationColors = {
 
 export function Header({ onMenuClick, title = "Dashboard" }: HeaderProps) {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications)
-  const { data: session } = useSession()
   
   const unreadCount = notifications.filter(n => !n.read).length
 
@@ -242,8 +240,8 @@ export function Header({ onMenuClick, title = "Dashboard" }: HeaderProps) {
           >
             <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg border border-border bg-background shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
               <div className="p-3 border-b border-border">
-                <p className="font-medium text-foreground">{session?.user?.name || 'Guest User'}</p>
-                <p className="text-sm text-muted-foreground">{session?.user?.email || 'guest@example.com'}</p>
+                <p className="font-medium text-foreground">Guest User</p>
+                <p className="text-sm text-muted-foreground">guest@example.com</p>
               </div>
               <div className="p-1">
                 <Menu.Item>
@@ -272,24 +270,6 @@ export function Header({ onMenuClick, title = "Dashboard" }: HeaderProps) {
                       <CreditCard className="h-4 w-4" />
                       My Transactions
                     </Link>
-                  )}
-                </Menu.Item>
-              </div>
-              <div className="p-1 border-t border-border">
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      className={cn(
-                        "flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md text-destructive",
-                        active && "bg-destructive/10"
-                      )}
-                      onClick={() => {
-                        signOut({ callbackUrl: '/auth/login' })
-                      }}
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sign out
-                    </button>
                   )}
                 </Menu.Item>
               </div>

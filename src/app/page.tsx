@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import {
   DollarSign,
@@ -16,9 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import { formatCurrency, formatDate } from '@/utils/formatters'
-
-// User name storage key
-const USER_NAME_KEY = 'financetrackr_username'
 
 // Mock data - in a real app, this would come from your API/database
 const mockStats = {
@@ -57,25 +54,7 @@ const getGreeting = () => {
 }
 
 export default function Dashboard() {
-  const [userName, setUserName] = useState<string>('')
-  const [isEditingName, setIsEditingName] = useState(false)
-  const [nameInput, setNameInput] = useState('')
-
-  useEffect(() => {
-    const storedName = localStorage.getItem(USER_NAME_KEY)
-    if (storedName) {
-      setUserName(storedName)
-      setNameInput(storedName)
-    }
-  }, [])
-
-  const handleSaveName = () => {
-    if (nameInput.trim()) {
-      localStorage.setItem(USER_NAME_KEY, nameInput.trim())
-      setUserName(nameInput.trim())
-      setIsEditingName(false)
-    }
-  }
+  const userName = 'User'
 
   return (
     <DashboardLayout title="Dashboard">
@@ -88,33 +67,9 @@ export default function Dashboard() {
           className="flex items-center justify-between"
         >
           <div>
-            {isEditingName ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-                  placeholder="Enter your name"
-                  className="px-3 py-2 text-lg border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  autoFocus
-                />
-                <Button size="sm" onClick={handleSaveName}>Save</Button>
-                <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}>Cancel</Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-foreground">
-                  {getGreeting()}{userName ? `, ${userName}` : ''}! 👋
-                </h2>
-                <button
-                  onClick={() => setIsEditingName(true)}
-                  className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
-                >
-                  {userName ? 'Edit name' : 'Add your name'}
-                </button>
-              </div>
-            )}
+            <h2 className="text-2xl font-bold text-foreground">
+              {getGreeting()}{userName ? `, ${userName}` : ''}! 👋
+            </h2>
             <p className="text-muted-foreground mt-1">
               Here&apos;s your financial overview for today.
             </p>
